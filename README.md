@@ -1,7 +1,3 @@
-Dette prosjektet ble utviklet som et praksis- og demonstrasjonsprosjekt for å vise kompetanse innen fullstack webutvikling, dataintegrasjon og bruk av åpne data fra Statens vegvesen.  
-Løsningen henter trafikkhendelser fra Nasjonal vegdatabank (NVDB) og visualiserer dem i sanntid på et interaktivt kart.  
-Prosjektet har som mål å vise forståelse for moderne webarkitektur, API-kommunikasjon og brukerrettet datavisualisering.
-
 # VegStatus – Trafikkmeldinger i sanntid
 
 Et fullstack-prosjekt utviklet for å demonstrere kompetanse innen webutvikling, dataintegrasjon og visualisering av trafikkdata.  

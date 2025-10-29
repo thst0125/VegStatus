@@ -1,39 +1,69 @@
 "use client";
+
 import { useEffect, useState } from "react";
 
+type TrafficObject = {
+  id: number;
+  type?: string;
+  navn: string;
+  sted: string;
+  veg?: string | null;
+  beskrivelse?: string | null;
+  starttid?: string | null;
+  sluttid?: string | null;
+};
+
 export default function TrafficList() {
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<TrafficObject[]>([]);
+  const [source, setSource] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/traffic")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("API-data:", data);
-        setEvents(data.objekter || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    (async () => {
+      const res = await fetch("http://localhost:4000/api/traffic");
+      const data = await res.json();
+      setItems(data.objekter || []);
+      setSource(data.source || null);
+    })();
   }, []);
 
-  if (loading) return <p>Laster trafikkdata...</p>;
+  const fmt = (iso?: string | null) =>
+    iso ? new Date(iso).toLocaleString("no-NO") : null;
 
   return (
-    <div className="grid gap-3 max-w-2xl mx-auto">
-      {events.slice(0, 10).map((e) => (
-        <div
-          key={e.id}
-          className="p-4 bg-white rounded-lg shadow hover:shadow-md transition"
-        >
-          <h2 className="font-semibold text-lg text-blue-600">
-            {e.metadata?.type?.navn || "Trafikkhendelse"}
-          </h2>
-          <p className="text-sm text-gray-700">
-            ID: {e.id} <br />
-            Lokasjon: {e.lokasjon?.geometri?.wkt?.slice(0, 80)}...
-          </p>
+    <div className="p-6 bg-white rounded-lg shadow border border-gray-200">
+      {source === "fallback" && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-3 mb-5 rounded">
+          Viser lokale testdata fordi NVDB-tjenesten er utilgjengelig.
         </div>
-      ))}
+      )}
+
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Trafikkmeldinger
+      </h2>
+
+      {items.length === 0 ? (
+        <p className="text-gray-600">Ingen hendelser funnet.</p>
+      ) : (
+        <ul className="space-y-3">
+          {items.map((o) => (
+            <li
+              key={o.id}
+              className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-300"
+            >
+              <p className="font-semibold text-gray-800">{o.type || o.navn}</p>
+              <div className="text-sm text-gray-700 mt-1 space-y-0.5">
+                <p>{o.sted}</p>
+                {o.beskrivelse && <p>{o.beskrivelse}</p>}
+                {o.veg && <p>Veg: {o.veg}</p>}
+                <div className="flex gap-4">
+                  {fmt(o.starttid) && <p>Fra: {fmt(o.starttid)}</p>}
+                  {fmt(o.sluttid) && <p>Til: {fmt(o.sluttid)}</p>}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

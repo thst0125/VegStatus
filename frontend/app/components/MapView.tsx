@@ -1,10 +1,11 @@
-"use client";
+"use client"; // Kreves for å kjøre React-komponenten på klientsiden (Next.js 13+)
 
-import "leaflet/dist/leaflet.css";
+import "leaflet/dist/leaflet.css"; // Kartbibliotekets standard CSS
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import L from "leaflet";
 
+// Definerer ikonene som brukes på kartet
 delete (L.Icon.Default as any).prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -15,6 +16,7 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
+// Definerer typen på data vi får fra backend
 type TrafficObject = {
   id: number;
   navn: string;
@@ -27,6 +29,7 @@ type TrafficObject = {
 export default function MapView() {
   const [trafficData, setTrafficData] = useState<TrafficObject[]>([]);
 
+  // useEffect henter data fra backend ved oppstart
   useEffect(() => {
     (async () => {
       const res = await fetch("http://localhost:4000/api/traffic");
@@ -39,14 +42,17 @@ export default function MapView() {
     <div className="flex justify-center mb-8">
       <div className="h-[600px] w-[900px] rounded-lg overflow-hidden shadow-lg border border-gray-300">
         <MapContainer
-          center={[60.472, 8.4689]}
+          center={[60.472, 8.4689]} // Kartets startposisjon (midten av Norge)
           zoom={6}
           className="h-full w-full"
         >
+          {/* OpenStreetMap som bakgrunnslag */}
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+
+          {/* Lager markør for hver trafikkhendelse */}
           {trafficData.map(
             (o) =>
               typeof o.lat === "number" &&

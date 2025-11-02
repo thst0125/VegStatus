@@ -1,13 +1,15 @@
-import express from "express";
-import axios from "axios";
-import cors from "cors";
-import proj4 from "proj4";
+import express from "express"; // Webserver-rammeverk (lager API-endepunkter)
+import axios from "axios"; // Brukes for å hente data fra NVDB sitt API
+import cors from "cors"; // Tillater frontend (localhost:3000) å hente data
+import proj4 from "proj4"; // Konverterer koordinater fra NVDB til vanlig lat/lng
 
 const app = express();
-app.use(cors());
+app.use(cors()); // Aktiverer CORS slik at frontend får tilgang til backend
 
+// Definerer koordinatsystemet NVDB bruker (UTM sone 33, ETRS89)
 proj4.defs("EPSG:25833", "+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs");
 
+// Hvis APIet er nede – bruk testdata slik at siden fortsatt fungerer
 const fallbackData = {
   objekter: [
     {
@@ -30,6 +32,7 @@ const fallbackData = {
   source: "fallback",
 };
 
+// Konverterer NVDB sitt vegkategori-format til mer lesbare koder (E, Rv, Fv, Kv)
 const mapVegkategori = (v) => {
   if (!v) return "";
   const k = String(v).toUpperCase().trim();
@@ -40,6 +43,7 @@ const mapVegkategori = (v) => {
   return k;
 };
 
+// Henter ut og konverterer koordinater fra NVDB sitt geometri-format (WKT)
 const parseCoords = (wkt) => {
   if (!wkt) return null;
   const m = wkt.match(/-?\d+(\.\d+)?\s+-?\d+(\.\d+)?/);
@@ -49,6 +53,7 @@ const parseCoords = (wkt) => {
   return { lat, lng };
 };
 
+// Lager et sted-felt basert på ulike egenskaper fra NVDB
 const buildSted = (obj) => {
   const eg = obj.egenskaper || [];
   const vkat = eg.find((e) => e.navn === "Vegkategori")?.verdi;
@@ -73,6 +78,7 @@ const buildSted = (obj) => {
   return "Ukjent sted";
 };
 
+// API-endepunkt som henter data fra NVDB (eller bruker fallback)
 app.get("/api/traffic", async (_req, res) => {
   try {
     const response = await axios.get(
@@ -89,6 +95,7 @@ app.get("/api/traffic", async (_req, res) => {
       }
     );
 
+    // Mapper om NVDB-data til enklere objekter som frontend kan bruke
     const objekter = (response.data?.objekter || [])
       .map((obj) => {
         const c = parseCoords(obj.lokasjon?.geometri?.wkt);
@@ -108,13 +115,17 @@ app.get("/api/traffic", async (_req, res) => {
       })
       .filter((o) => typeof o.lat === "number" && typeof o.lng === "number");
 
+    // Hvis ingen gyldige hendelser finnes → bruk fallback
     if (!objekter.length) return res.json(fallbackData);
+
+    // Sender resultatet tilbake til frontend
     res.json({ objekter, source: "nvdb" });
   } catch {
     res.json(fallbackData);
   }
 });
 
+// Starter serveren
 const PORT = 4000;
 app.listen(PORT, () =>
   console.log(`✅ Backend kjører på port ${PORT} (NVDB Les v3 aktiv)`)

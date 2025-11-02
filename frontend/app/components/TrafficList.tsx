@@ -17,6 +17,7 @@ export default function TrafficList() {
   const [items, setItems] = useState<TrafficObject[]>([]);
   const [source, setSource] = useState<string | null>(null);
 
+  // Henter data fra backend ved lasting av komponenten
   useEffect(() => {
     (async () => {
       const res = await fetch("http://localhost:4000/api/traffic");
@@ -26,11 +27,13 @@ export default function TrafficList() {
     })();
   }, []);
 
+  // Funksjon for å formatere dato/tid til norsk format
   const fmt = (iso?: string | null) =>
     iso ? new Date(iso).toLocaleString("no-NO") : null;
 
   return (
     <div className="p-6 bg-white rounded-lg shadow border border-gray-200">
+      {/* Advarsel hvis vi bruker fallback-data */}
       {source === "fallback" && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-3 mb-5 rounded">
           Viser lokale testdata fordi NVDB-tjenesten er utilgjengelig.
@@ -41,6 +44,7 @@ export default function TrafficList() {
         Trafikkmeldinger
       </h2>
 
+      {/* Hvis ingen hendelser finnes */}
       {items.length === 0 ? (
         <p className="text-gray-600">Ingen hendelser funnet.</p>
       ) : (

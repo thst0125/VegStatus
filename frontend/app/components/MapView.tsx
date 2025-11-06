@@ -1,6 +1,6 @@
-"use client"; // Kreves for å kjøre React-komponenten på klientsiden (Next.js 13+)
+"use client";
 
-import "leaflet/dist/leaflet.css"; // Kartbibliotekets standard CSS
+import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { useEffect, useState } from "react";
 import L from "leaflet";

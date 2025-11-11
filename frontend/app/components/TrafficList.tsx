@@ -27,7 +27,7 @@ export default function TrafficList() {
     })();
   }, []);
 
-  // Funksjon for å formatere dato/tid til norsk format
+  // Funksjon for å formatere dato/tid til norsk format.
   const fmt = (iso?: string | null) =>
     iso ? new Date(iso).toLocaleString("no-NO") : null;
 
